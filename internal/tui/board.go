@@ -17,8 +17,8 @@ import (
 
 // Layout constants
 const (
-	minColumnWidth = 22
-	maxColumnWidth = 45
+	minColumnWidth = 20
+	maxColumnWidth = 35
 	headerLines    = 1  // Single header line with title + status
 	pageJumpSize   = 10 // Number of items to jump with Ctrl+D/U
 )
@@ -499,19 +499,25 @@ func (m BoardModel) renderBoard(totalWidth, totalHeight int) string {
 		colContentHeight = 3
 	}
 
-	// Use fixed column width for consistent layout
-	colWidth := maxColumnWidth
-	if colWidth < minColumnWidth {
-		colWidth = minColumnWidth
+	// Calculate how many columns can fit at minimum width
+	maxVisibleCols := totalWidth / minColumnWidth
+	if maxVisibleCols < 1 {
+		maxVisibleCols = 1
 	}
 
-	// Calculate how many columns fit on screen
-	visibleCols := totalWidth / colWidth
-	if visibleCols < 1 {
-		visibleCols = 1
-	}
+	// How many columns will we actually show?
+	visibleCols := maxVisibleCols
 	if visibleCols > numCols {
 		visibleCols = numCols
+	}
+
+	// Calculate column width to fill available space evenly
+	colWidth := totalWidth / visibleCols
+	if colWidth > maxColumnWidth {
+		colWidth = maxColumnWidth
+	}
+	if colWidth < minColumnWidth {
+		colWidth = minColumnWidth
 	}
 
 	// Content width inside column (minus border and padding: 2 border + 2 padding = 4)
@@ -684,24 +690,34 @@ func (m BoardModel) renderColumn(colID string, selected bool, width, innerHeight
 }
 
 // formatCardText formats a card for display with max width
+// Right-aligns the issue ID/suffix
 func (m BoardModel) formatCardText(card *domain.Card, maxWidth int) string {
 	title := card.Title
 
-	// Determine suffix
+	// Determine suffix (issue number or type indicator)
 	suffix := ""
 	switch card.ContentType {
 	case domain.ContentTypeIssue, domain.ContentTypePullRequest:
 		if card.Number > 0 {
-			suffix = fmt.Sprintf(" #%d", card.Number)
+			suffix = fmt.Sprintf("#%d", card.Number)
 		}
 	case domain.ContentTypeDraftIssue:
-		suffix = " (draft)"
+		suffix = "(draft)"
 	case domain.ContentTypePrivate:
-		suffix = " (pvt)"
+		suffix = "(pvt)"
 	}
 
-	// Calculate available space for title
-	availableForTitle := maxWidth - len(suffix)
+	suffixLen := len(suffix)
+	if suffixLen == 0 {
+		// No suffix, just truncate title
+		if len(title) > maxWidth {
+			title = title[:maxWidth-1] + "…"
+		}
+		return title
+	}
+
+	// Calculate available space for title (leave room for suffix + 1 space gap)
+	availableForTitle := maxWidth - suffixLen - 1
 	if availableForTitle < 5 {
 		availableForTitle = 5
 	}
@@ -711,7 +727,14 @@ func (m BoardModel) formatCardText(card *domain.Card, maxWidth int) string {
 		title = title[:availableForTitle-1] + "…"
 	}
 
-	return title + dimStyle.Render(suffix)
+	// Calculate padding to right-align suffix
+	titleLen := len(title)
+	padding := maxWidth - titleLen - suffixLen
+	if padding < 1 {
+		padding = 1
+	}
+
+	return title + strings.Repeat(" ", padding) + dimStyle.Render(suffix)
 }
 
 // rebuildColumns rebuilds column structure from store
@@ -891,9 +914,8 @@ func (m *BoardModel) adjustColumnScroll() {
 		return
 	}
 
-	// Calculate how many columns fit on screen
-	colWidth := maxColumnWidth
-	visibleCols := m.width / colWidth
+	// Calculate how many columns fit on screen (same logic as renderBoard)
+	visibleCols := m.width / minColumnWidth
 	if visibleCols < 1 {
 		visibleCols = 1
 	}
