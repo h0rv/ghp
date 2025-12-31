@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/robby/ghp/internal/gh"
+	"github.com/h0rv/ghp/internal/gh"
 )
 
 func main() {

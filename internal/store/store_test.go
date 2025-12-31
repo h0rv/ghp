@@ -3,7 +3,7 @@ package store
 import (
 	"testing"
 
-	"github.com/robby/ghp/internal/domain"
+	"github.com/h0rv/ghp/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -1,4 +1,4 @@
-module github.com/robby/ghp
+module github.com/h0rv/ghp
 
 go 1.24.0
 

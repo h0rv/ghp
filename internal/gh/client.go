@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/machinebox/graphql"
-	"github.com/robby/ghp/internal/auth"
+	"github.com/h0rv/ghp/internal/auth"
 )
 
 // Client is a GitHub GraphQL API client for Projects v2.

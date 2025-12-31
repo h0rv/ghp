@@ -6,9 +6,9 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/robby/ghp/internal/gh"
-	"github.com/robby/ghp/internal/store"
-	"github.com/robby/ghp/internal/tui"
+	"github.com/h0rv/ghp/internal/gh"
+	"github.com/h0rv/ghp/internal/store"
+	"github.com/h0rv/ghp/internal/tui"
 	"github.com/spf13/cobra"
 )
 

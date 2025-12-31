@@ -2,8 +2,8 @@
 package tui
 
 import (
-	"github.com/robby/ghp/internal/domain"
-	"github.com/robby/ghp/internal/gh"
+	"github.com/h0rv/ghp/internal/domain"
+	"github.com/h0rv/ghp/internal/gh"
 )
 
 // OwnerSelectedMsg is emitted when the user selects an owner.

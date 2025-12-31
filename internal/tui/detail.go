@@ -13,8 +13,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/pkg/browser"
-	"github.com/robby/ghp/internal/domain"
-	"github.com/robby/ghp/internal/gh"
+	"github.com/h0rv/ghp/internal/domain"
+	"github.com/h0rv/ghp/internal/gh"
 )
 
 // Layout constants

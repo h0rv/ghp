@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/robby/ghp/internal/domain"
-	"github.com/robby/ghp/internal/gh"
-	"github.com/robby/ghp/internal/store"
+	"github.com/h0rv/ghp/internal/domain"
+	"github.com/h0rv/ghp/internal/gh"
+	"github.com/h0rv/ghp/internal/store"
 )
 
 // AppScreen represents the different screens in the application flow.

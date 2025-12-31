@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/robby/ghp/internal/domain"
+	"github.com/h0rv/ghp/internal/domain"
 )
 
 var (

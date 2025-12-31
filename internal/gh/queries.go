@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/machinebox/graphql"
-	"github.com/robby/ghp/internal/domain"
+	"github.com/h0rv/ghp/internal/domain"
 )
 
 // OwnerType represents whether an owner is an organization or user.

@@ -5,13 +5,13 @@ Terminal UI for GitHub Projects v2.
 ## Install
 
 ```bash
-go install github.com/robby/ghp/cmd/ghp@latest
+go install github.com/h0rv/ghp/cmd/ghp@latest
 ```
 
 Or build from source:
 
 ```bash
-git clone https://github.com/robby/ghp.git
+git clone https://github.com/h0rv/ghp.git
 cd ghp
 go build -o ghp ./cmd/ghp
 ```

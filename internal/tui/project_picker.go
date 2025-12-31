@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/robby/ghp/internal/domain"
+	"github.com/h0rv/ghp/internal/domain"
 )
 
 // projectItem wraps a domain.Project for use in bubbles/list.
