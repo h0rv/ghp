@@ -9,10 +9,10 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/pkg/browser"
 	"github.com/h0rv/ghp/internal/domain"
 	"github.com/h0rv/ghp/internal/gh"
 	"github.com/h0rv/ghp/internal/store"
+	"github.com/pkg/browser"
 )
 
 // Layout constants
@@ -73,6 +73,7 @@ type BoardModel struct {
 	columnNames    map[string]string   // Column ID -> display name
 	filteredCards  map[string][]string // Column ID -> card IDs
 	selectedColumn int                 // Currently selected column
+	columnOffset   int                 // Horizontal scroll offset (first visible column index)
 	selectedCard   map[string]int      // Column ID -> selected card index
 	scrollOffset   map[string]int      // Column ID -> scroll offset
 
@@ -251,10 +252,12 @@ func (m BoardModel) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "h", "left":
 		if m.selectedColumn > 0 {
 			m.selectedColumn--
+			(&m).adjustColumnScroll()
 		}
 	case "l", "right":
 		if m.selectedColumn < len(m.columns)-1 {
 			m.selectedColumn++
+			(&m).adjustColumnScroll()
 		}
 	case "j", "down":
 		(&m).moveCardSelection(1)
@@ -404,9 +407,16 @@ func (m BoardModel) renderSecondHeader(width int) string {
 	} else if len(m.columns) > 0 {
 		colID := m.columns[m.selectedColumn]
 		cards := m.filteredCards[colID]
+
+		// Show column position (col X/Y)
+		colPos := fmt.Sprintf("col %d/%d", m.selectedColumn+1, len(m.columns))
+
+		// Show card position within column
 		if len(cards) > 0 {
 			cardIdx := m.selectedCard[colID] + 1
-			right = fmt.Sprintf("%d/%d", cardIdx, len(cards))
+			right = fmt.Sprintf("%s | card %d/%d", colPos, cardIdx, len(cards))
+		} else {
+			right = colPos
 		}
 	}
 
@@ -473,6 +483,7 @@ func (m BoardModel) renderHeader(width int) string {
 }
 
 // renderBoard renders the kanban columns within the given dimensions
+// Implements horizontal scrolling (carousel) when columns overflow
 func (m BoardModel) renderBoard(totalWidth, totalHeight int) string {
 	numCols := len(m.columns)
 	if numCols == 0 {
@@ -488,17 +499,19 @@ func (m BoardModel) renderBoard(totalWidth, totalHeight int) string {
 		colContentHeight = 3
 	}
 
-	// Calculate column width to fill available space
-	// Each column has 2 chars for border (left + right)
-	availableWidth := totalWidth
-	colWidth := availableWidth / numCols
-
-	// Clamp column width
+	// Use fixed column width for consistent layout
+	colWidth := maxColumnWidth
 	if colWidth < minColumnWidth {
 		colWidth = minColumnWidth
 	}
-	if colWidth > maxColumnWidth {
-		colWidth = maxColumnWidth
+
+	// Calculate how many columns fit on screen
+	visibleCols := totalWidth / colWidth
+	if visibleCols < 1 {
+		visibleCols = 1
+	}
+	if visibleCols > numCols {
+		visibleCols = numCols
 	}
 
 	// Content width inside column (minus border and padding: 2 border + 2 padding = 4)
@@ -514,11 +527,46 @@ func (m BoardModel) renderBoard(totalWidth, totalHeight int) string {
 		maxCardLines = 1
 	}
 
-	// Build each column
-	columnViews := make([]string, numCols)
-	for i, colID := range m.columns {
+	// Determine visible column range based on columnOffset
+	startCol := m.columnOffset
+	endCol := startCol + visibleCols
+	if endCol > numCols {
+		endCol = numCols
+		startCol = endCol - visibleCols
+		if startCol < 0 {
+			startCol = 0
+		}
+	}
+
+	// Build only visible columns
+	columnViews := make([]string, 0, visibleCols)
+
+	// Left scroll indicator if there are hidden columns to the left
+	if startCol > 0 {
+		indicator := lipgloss.NewStyle().
+			Width(2).
+			Height(colContentHeight+2).
+			Foreground(lipgloss.Color("205")).
+			Align(lipgloss.Center, lipgloss.Center).
+			Render("◀")
+		columnViews = append(columnViews, indicator)
+	}
+
+	for i := startCol; i < endCol; i++ {
+		colID := m.columns[i]
 		isSelected := i == m.selectedColumn
-		columnViews[i] = m.renderColumn(colID, isSelected, colWidth, colContentHeight, innerWidth, maxCardLines, i+1)
+		columnViews = append(columnViews, m.renderColumn(colID, isSelected, colWidth, colContentHeight, innerWidth, maxCardLines, i+1))
+	}
+
+	// Right scroll indicator if there are hidden columns to the right
+	if endCol < numCols {
+		indicator := lipgloss.NewStyle().
+			Width(2).
+			Height(colContentHeight+2).
+			Foreground(lipgloss.Color("205")).
+			Align(lipgloss.Center, lipgloss.Center).
+			Render("▶")
+		columnViews = append(columnViews, indicator)
 	}
 
 	// Join horizontally with alignment at top
@@ -834,6 +882,33 @@ func (m *BoardModel) adjustScroll(colID string) {
 	// Scroll down if needed
 	if selectedIdx >= scrollOffset+visibleCards {
 		m.scrollOffset[colID] = selectedIdx - visibleCards + 1
+	}
+}
+
+// adjustColumnScroll ensures the selected column is visible (horizontal carousel)
+func (m *BoardModel) adjustColumnScroll() {
+	if len(m.columns) == 0 || m.width == 0 {
+		return
+	}
+
+	// Calculate how many columns fit on screen
+	colWidth := maxColumnWidth
+	visibleCols := m.width / colWidth
+	if visibleCols < 1 {
+		visibleCols = 1
+	}
+	if visibleCols > len(m.columns) {
+		visibleCols = len(m.columns)
+	}
+
+	// Scroll left if selected column is before visible range
+	if m.selectedColumn < m.columnOffset {
+		m.columnOffset = m.selectedColumn
+	}
+
+	// Scroll right if selected column is after visible range
+	if m.selectedColumn >= m.columnOffset+visibleCols {
+		m.columnOffset = m.selectedColumn - visibleCols + 1
 	}
 }
 
