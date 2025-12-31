@@ -11,10 +11,10 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/muesli/reflow/wordwrap"
-	"github.com/pkg/browser"
 	"github.com/h0rv/ghp/internal/domain"
 	"github.com/h0rv/ghp/internal/gh"
+	"github.com/muesli/reflow/wordwrap"
+	"github.com/pkg/browser"
 )
 
 // Layout constants

@@ -28,7 +28,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	fmt.Printf("Projects (%d):\n", len(projects))
 	for _, p := range projects {
 		fmt.Printf("  #%d: %s (ID=%s)\n", p.Number, p.Title, p.ID)
@@ -80,7 +80,7 @@ func main() {
 	}
 
 	fmt.Printf("Items (%d, hasMore=%v, cursor=%s):\n", len(cards), hasMore, cursor[:20]+"...")
-	
+
 	// Group by status
 	groups := make(map[string]int)
 	for _, c := range cards {

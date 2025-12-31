@@ -6,8 +6,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/machinebox/graphql"
 	"github.com/h0rv/ghp/internal/auth"
+	"github.com/machinebox/graphql"
 )
 
 // Client is a GitHub GraphQL API client for Projects v2.
